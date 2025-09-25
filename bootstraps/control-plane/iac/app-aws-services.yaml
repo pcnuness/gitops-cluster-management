@@ -18,7 +18,7 @@ spec:
               files:
                 - path: "cluster/*/*/iac/*/*/values.yaml"
               values:
-                environment: "{{path[2]}}"
+                environment: "{{path[1]}}"
                 svc_name: "{{path[4]}}"
                 app_name: "{{path[5]}}"
           - clusters:

@@ -1,8 +1,0 @@
-site_name: "gitops-cluster-management"
-site_description: "pcnuness"
-
-nav:
-  - Introduction: index.md
-
-plugins:
-  - techdocs-core
