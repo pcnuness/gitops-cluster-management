@@ -1,0 +1,26 @@
+---
+apiVersion: secretsmanager.aws.upbound.io/v1beta1
+kind: Secret
+metadata:
+  annotations:
+    meta.upbound.io/example-id: secretsmanager/v1beta1/secret
+    argocd.argoproj.io/sync-wave: "1"
+    gitops.plataform/environment: "develop"
+    gitops.plataform/src: "secretsmanager"
+    gitops.plataform/app: "app-xpto"
+    gitops.plataform/cluster: "gitops-develop"
+  labels:
+    testing.upbound.io/example-name: secretsmanager
+  name: example-appxpto
+  namespace: iac-secrets-manager
+spec:
+  forProvider:
+    name: example-appxpto
+    description: "Secret envelope managed by Crossplane, content managed externally"
+    recoveryWindowInDays: 7
+    region: us-east-1
+    tags:
+      gitops.plataform/environment: "develop"
+      gitops.plataform/src: "secretsmanager"
+      gitops.plataform/app: "app-xpto2"
+      gitops.plataform/cluster: "gitops-develop"
