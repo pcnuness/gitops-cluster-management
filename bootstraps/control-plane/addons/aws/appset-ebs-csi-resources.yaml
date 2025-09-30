@@ -13,26 +13,8 @@ spec:
           - clusters:
               values:
                 addonChart: aws-ebs-csi-classes
-                # anything not staging or prod use this version
                 addonChartVersion: 1.0.0
                 addonChartRepository: https://gitops-bridge-dev.github.io/gitops-bridge-helm-charts
-              selector:
-                matchExpressions:
-                  - key: enable_aws_ebs_csi_resources
-                    operator: In
-                    values: ['true']
-          - clusters:
-              selector:
-                matchLabels:
-                  environment: staging
-              values:
-                addonChartVersion: 1.0.0
-          - clusters:
-              selector:
-                matchLabels:
-                  environment: prod
-              values:
-                addonChartVersion: 1.0.0
   template:
     metadata:
       name: addon-{{values.addonChart}}-{{name}}
@@ -52,9 +34,7 @@ spec:
             releaseName: '{{values.addonChart}}'
             ignoreMissingValueFiles: true
             valueFiles:
-              - $values/environments/default/addons/{{values.addonChart}}/values.yaml
-              - $values/environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}/values.yaml
-              - $values/environments/clusters/{{name}}/addons/{{values.addonChart}}/values.yaml
+              - $values/addons/{{values.addonChart}}/values.yaml
       destination:
         name: '{{name}}'
       syncPolicy:

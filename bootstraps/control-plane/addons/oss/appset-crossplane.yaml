@@ -12,7 +12,7 @@ metadata:
     gitops.plataform/managed-by: foundation
 spec:
   syncPolicy:
-    preserveResourcesOnDeletion: false
+    preserveResourcesOnDeletion: true
   generators:
     - merge:
         mergeKeys: [server]
@@ -39,7 +39,6 @@ spec:
             releaseName: '{{values.addonChart}}'
             ignoreMissingValueFiles: true
             valueFiles:
-              - $values/addons/default/{{values.addonChart}}/values.yaml
               - $values/addons/{{values.addonChart}}/values.yaml
             values: |
               serviceAccount:
