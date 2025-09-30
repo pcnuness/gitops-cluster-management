@@ -1,4 +1,3 @@
-
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -8,7 +7,7 @@ metadata:
   annotations:
     gitops.plataform/area: devops
     gitops.plataform/service: gitops
-    gitops.plataform/managed-by: teamplataform
+    gitops.plataform/managed-by: foundation
 spec:
   project: default
   source:

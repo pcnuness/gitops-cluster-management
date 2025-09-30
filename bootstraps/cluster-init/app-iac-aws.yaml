@@ -7,8 +7,8 @@ metadata:
   namespace: argocd
   annotations:
     gitops.plataform/area: devops
-    gitops.plataform/service: gitops
-    gitops.plataform/managed-by: team-plataform
+    gitops.plataform/service: aws
+    gitops.plataform/managed-by: foundation
 spec:
   project: default
   source:

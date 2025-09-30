@@ -21,15 +21,6 @@ spec:
                 environment: "{{path[1]}}"
                 svc_name: "{{path[4]}}"
                 app_name: "{{path[5]}}"
-          - clusters:
-              selector:
-                matchExpressions:
-                  - key: enable_aws_services
-                    operator: In
-                    values: ['true']
-                  - key: environment
-                    operator: In
-                    values: ["{{values.environment}}"]
   template:
     metadata:
       name: "iac-aws-{{values.svc_name}}-{{values.app_name}}-{{values.environment}}-{{name}}"

@@ -2,11 +2,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: addons-oss-grafana-dashboard
+  name: addons-oss-grafana
   annotations:
     gitops.plataform/area: observability
-    gitops.plataform/service: dashaboard
-    gitops.plataform/managed-by: plataform-team
+    gitops.plataform/service: grafana
+    gitops.plataform/managed-by: foundation
 spec:
   syncPolicy:
     preserveResourcesOnDeletion: true
@@ -21,23 +21,6 @@ spec:
                 addonChartNamespace: observability
                 addonChartVersion: 9.2.10
                 addonChartRepository: https://grafana.github.io/helm-charts
-              selector:
-                matchExpressions:
-                  - key: enable_grafana_dashboard
-                    operator: In
-                    values: ['true']
-          - clusters:
-              selector:
-                matchLabels:
-                  environment: stage
-              values:
-                addonChartVersion: 9.2.10
-          - clusters:
-              selector:
-                matchLabels:
-                  environment: production
-              values:
-                addonChartVersion: 9.2.10
   template:
     metadata:
       name: addon-{{values.addonChart}}-{{name}}
@@ -54,9 +37,8 @@ spec:
             releaseName: '{{values.addonChartReleaseName}}'
             ignoreMissingValueFiles: true
             valueFiles:
-              - $values/environments/default/addons/{{values.addonChart}}/values.yaml
-              - $values/environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}/values.yaml
-              - $values/clusters/{{name}}/addons/{{values.addonChart}}/values.yaml
+              - $values/addons/default/{{values.addonChart}}/values.yaml
+              - $values/addons/{{values.addonChart}}/values.yaml
       destination:
         namespace: '{{values.addonChartNamespace}}'
         name: '{{name}}'
