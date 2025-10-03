@@ -9,7 +9,7 @@ metadata:
     gitops.plataform/area: cloud
     gitops.plataform/service: iac
     gitops.plataform/component: crossplane
-    gitops.plataform/managed-by: foundation
+    gitops.plataform/managed-by: foundations
 spec:
   syncPolicy:
     preserveResourcesOnDeletion: true

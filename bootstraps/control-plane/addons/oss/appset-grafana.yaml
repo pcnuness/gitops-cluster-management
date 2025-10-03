@@ -6,7 +6,7 @@ metadata:
   annotations:
     gitops.plataform/area: observability
     gitops.plataform/service: grafana
-    gitops.plataform/managed-by: foundation
+    gitops.plataform/managed-by: foundations
 spec:
   syncPolicy:
     preserveResourcesOnDeletion: true
