@@ -2,10 +2,13 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: addons-oss-grafana
+  name: addons-aws-eks-addons
+  namespace: argocd
   annotations:
-    gitops.plataform/area: observability
-    gitops.plataform/service: grafana
+    argocd.argoproj.io/sync-wave: "0"
+    gitops.plataform/area: cloud
+    gitops.plataform/service: eks
+    gitops.plataform/component: addons
     gitops.plataform/managed-by: foundations
 spec:
   syncPolicy:
@@ -16,12 +19,11 @@ spec:
         generators:
           - clusters:
               values:
-                addonChart: grafana
-                addonChartReleaseName: grafana
-                addonChartNamespace: observability
+                addonChart: eks-addons
+                addonChartNamespace: kube-system
   template:
     metadata:
-      name: addon-{{values.addonChart}}-{{name}}
+      name: addon-aws-{{values.addonChart}}-{{name}}
     spec:
       project: cluster-management
       sources:
@@ -45,4 +47,4 @@ spec:
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
-          - ServerSideApply=true 
+          - ServerSideApply=true

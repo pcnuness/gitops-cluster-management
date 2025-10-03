@@ -1,5 +1,27 @@
 ---
-replicaCount: 3
-revisionHistoryLimit: 10
-tolerations: []
-affinity: {}
+# Crossplane specific overrides for cluster management
+crossplane:
+  # AWS Provider specific configurations
+  args:
+    - --enable-composition-revisions
+    - --enable-composition-functions
+    - --debug
+  # Additional security configurations
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    fsGroup: 65532
+  # Pod Security Context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    fsGroup: 65532
+  # Node selection for crossplane pods
+  nodeSelector:
+    node.kubernetes.io/instance-type: "m5.large"
+  # Additional tolerations for dedicated nodes
+  tolerations:
+    - key: "dedicated"
+      operator: "Equal"
+      value: "crossplane"
+      effect: "NoSchedule"

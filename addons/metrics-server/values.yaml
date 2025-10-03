@@ -1,0 +1,30 @@
+---
+# Metrics Server specific overrides for cluster management
+metrics-server:
+  # Additional metrics server configurations
+  args:
+    - --kubelet-insecure-tls
+    - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+    - --cert-dir=/tmp
+    - --secure-port=10250
+    - --kubelet-certificate-authority=/var/lib/secrets/kubernetes.io/serviceaccount/ca.crt
+  # Security configurations
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+  # Pod Security Context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+  # Node selection for metrics-server pods
+  nodeSelector:
+    kubernetes.io/os: linux
+  # Additional tolerations
+  tolerations:
+    - key: "CriticalAddonsOnly"
+      operator: "Exists"
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"

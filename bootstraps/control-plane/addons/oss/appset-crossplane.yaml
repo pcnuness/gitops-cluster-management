@@ -29,19 +29,15 @@ spec:
       sources:
         - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
           targetRevision: 'main'
-          path: environments/{{metadata.annotations.environment}}/{{values.addonChart}}
-          helm:
-            valueFiles:
-              - $values/environments/default/{{values.addonChart}}/values.yaml
-              - $values/environments/{{metadata.annotations.environment}}/{{values.addonChart}}/values.yaml
+          ref: values
         - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
           targetRevision: 'main'
           path: environments/{{metadata.annotations.environment}}/{{values.addonChart}}
+        - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git'
+          targetRevision: 'main'
+          path: addons/{{values.addonChart}}
           helm:
-            releaseName: '{{values.addonChart}}'
             ignoreMissingValueFiles: true
-            valueFiles:
-              - $values/addons/{{values.addonChart}}/values.yaml
       destination:
         namespace: '{{values.addonChartNamespace}}'
         name: '{{name}}'
