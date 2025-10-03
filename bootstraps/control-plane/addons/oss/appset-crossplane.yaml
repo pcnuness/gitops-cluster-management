@@ -21,31 +21,27 @@ spec:
               values:
                 addonChart: crossplane
                 addonChartNamespace: crossplane-system
-                addonChartVersion: 1.20.0
-                addonChartRepository: https://charts.crossplane.io/stable
   template:
     metadata:
       name: addon-oss-{{values.addonChart}}-{{name}}
     spec:
       project: cluster-management
       sources:
-        - repoURL: '{{metadata.annotations.addons_repo_url}}'
-          targetRevision: '{{metadata.annotations.addons_repo_revision}}'
-          ref: values
-        - chart: '{{values.addonChart}}'
-          repoURL: '{{values.addonChartRepository}}'
-          targetRevision: '{{values.addonChartVersion}}'
+        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
+          targetRevision: 'main'
+          path: environments/{{metadata.annotations.environment}}/{{values.addonChart}}
+          helm:
+            valueFiles:
+              - $values/environments/default/{{values.addonChart}}/values.yaml
+              - $values/environments/{{metadata.annotations.environment}}/{{values.addonChart}}/values.yaml
+        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
+          targetRevision: 'main'
+          path: environments/{{metadata.annotations.environment}}/{{values.addonChart}}
           helm:
             releaseName: '{{values.addonChart}}'
             ignoreMissingValueFiles: true
             valueFiles:
               - $values/addons/{{values.addonChart}}/values.yaml
-            values: |
-              serviceAccount:
-                create: true
-                name: "provider-aws"
-                customAnnotations:
-                  eks.amazonaws.com/role-arn: {{metadata.annotations.crossplane_iam_role_arn}}
       destination:
         namespace: '{{values.addonChartNamespace}}'
         name: '{{name}}'
