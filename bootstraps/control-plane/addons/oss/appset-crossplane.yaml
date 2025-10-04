@@ -22,7 +22,7 @@ spec:
           matchExpressions:
             - key: environment
               operator: In
-              values: ["{{values.environment}}"]
+              values: ["{{metadata.labels.environment}}"]
   template:
     metadata:
       name: addon-oss-{{values.addonChart}}-{{name}}
