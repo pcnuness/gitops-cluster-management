@@ -27,7 +27,7 @@ spec:
           ref: values
         - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
           targetRevision: 'main'
-          path: environments/{{metadata.annotations.environment}}/{{values.addonChart}}
+          path: environments/{{metadata.labels.environment}}/{{values.addonChart}}
         - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git'
           targetRevision: 'main'
           path: addons/{{values.addonChart}}
