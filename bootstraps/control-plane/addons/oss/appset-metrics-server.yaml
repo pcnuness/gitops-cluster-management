@@ -34,8 +34,7 @@ spec:
           path: environments/develop/addons/{{values.addonChart}}
           helm:
             valueFiles:
-              - environments/default/addons/{{values.addonChart}}/values.yaml
-              - environments/develop/addons/{{values.addonChart}}/values.yaml
+              - values.yaml
             ignoreMissingValueFiles: true
       destination:
         namespace: '{{values.addonChartNamespace}}'
