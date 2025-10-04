@@ -20,7 +20,7 @@ spec:
           matchExpressions:
             - key: environment
               operator: In
-              values: ["{{values.environment}}"]
+              values: ["develop", "uat", "prod"]
   template:
     metadata:
       name: addon-{{values.addonChart}}-{{name}}

@@ -18,6 +18,11 @@ spec:
         values:
           addonChart: eks-addons
           addonChartNamespace: kube-system
+        selector:
+          matchExpressions:
+            - key: environment
+              operator: In
+              values: ["develop", "uat", "prod"]
   template:
     metadata:
       name: addon-aws-{{values.addonChart}}-{{name}}
@@ -29,7 +34,7 @@ spec:
           ref: values
         - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
           targetRevision: 'main'
-          path: environments/{{metadata.annotations.environment}}/{{values.addonChart}}
+          path: environments/{{values.environment}}/{{values.addonChart}}
         - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git'
           targetRevision: 'main'
           path: addons/{{values.addonChart}}
