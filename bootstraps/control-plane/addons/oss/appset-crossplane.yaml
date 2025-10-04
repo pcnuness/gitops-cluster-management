@@ -18,6 +18,11 @@ spec:
         values:
           addonChart: crossplane
           addonChartNamespace: crossplane-system
+        selector:
+          matchExpressions:
+            - key: environment
+              operator: In
+              values: ["{{values.environment}}"]
   template:
     metadata:
       name: addon-oss-{{values.addonChart}}-{{name}}

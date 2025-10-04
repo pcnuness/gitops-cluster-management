@@ -16,6 +16,11 @@ spec:
           addonChart: grafana
           addonChartReleaseName: grafana
           addonChartNamespace: observability
+        selector:
+          matchExpressions:
+            - key: environment
+              operator: In
+              values: ["{{values.environment}}"]
   template:
     metadata:
       name: addon-{{values.addonChart}}-{{name}}

@@ -18,6 +18,12 @@ spec:
         values:
           addonChart: metrics-server
           addonChartNamespace: kube-system
+        selector:
+          matchExpressions:
+            - key: environment
+              operator: In
+              values: ["{{values.environment}}"]
+
   template:
     metadata:
       name: addon-oss-{{values.addonChart}}-{{name}}
