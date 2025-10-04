@@ -35,11 +35,11 @@ spec:
           ref: values
         - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
           targetRevision: 'main'
-          path: environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}
+          path: environments/develop/addons/{{values.addonChart}}
           helm:
             valueFiles:
               - $values/environments/default/addons/{{values.addonChart}}/values.yaml
-              - $values/environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}/values.yaml
+              - $values/environments/develop/addons/{{values.addonChart}}/values.yaml
               - $values/addons/{{values.addonChart}}/values.yaml
             ignoreMissingValueFiles: true
       destination:
