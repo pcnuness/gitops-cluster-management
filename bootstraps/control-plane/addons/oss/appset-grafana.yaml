@@ -11,14 +11,11 @@ spec:
   syncPolicy:
     preserveResourcesOnDeletion: true
   generators:
-    - merge:
-        mergeKeys: [server]
-        generators:
-          - clusters:
-              values:
-                addonChart: grafana
-                addonChartReleaseName: grafana
-                addonChartNamespace: observability
+    - clusters:
+        values:
+          addonChart: grafana
+          addonChartReleaseName: grafana
+          addonChartNamespace: observability
   template:
     metadata:
       name: addon-{{values.addonChart}}-{{name}}

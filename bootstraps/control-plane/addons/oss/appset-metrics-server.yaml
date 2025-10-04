@@ -14,13 +14,10 @@ spec:
   syncPolicy:
     preserveResourcesOnDeletion: true
   generators:
-    - merge:
-        mergeKeys: [server]
-        generators:
-          - clusters:
-              values:
-                addonChart: metrics-server
-                addonChartNamespace: kube-system
+    - clusters:
+        values:
+          addonChart: metrics-server
+          addonChartNamespace: kube-system
   template:
     metadata:
       name: addon-oss-{{values.addonChart}}-{{name}}

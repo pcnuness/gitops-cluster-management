@@ -14,13 +14,10 @@ spec:
   syncPolicy:
     preserveResourcesOnDeletion: true
   generators:
-    - merge:
-        mergeKeys: [server]
-        generators:
-          - clusters:
-              values:
-                addonChart: crossplane
-                addonChartNamespace: crossplane-system
+    - clusters:
+        values:
+          addonChart: crossplane
+          addonChartNamespace: crossplane-system
   template:
     metadata:
       name: addon-oss-{{values.addonChart}}-{{name}}
