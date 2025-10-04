@@ -18,13 +18,3 @@ metrics-server:
     runAsNonRoot: true
     runAsUser: 1000
     fsGroup: 1000
-  # Node selection for metrics-server pods
-  nodeSelector:
-    kubernetes.io/os: linux
-  # Additional tolerations
-  tolerations:
-    - key: "CriticalAddonsOnly"
-      operator: "Exists"
-    - key: "node-role.kubernetes.io/control-plane"
-      operator: "Exists"
-      effect: "NoSchedule"

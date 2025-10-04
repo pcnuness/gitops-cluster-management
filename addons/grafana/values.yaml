@@ -2,11 +2,6 @@
 # Grafana specific overrides for cluster management
 grafana:
   # Additional Grafana configurations
-  persistence:
-    enabled: true
-    size: 10Gi
-    storageClassName: gp3
-  # Ingress configuration
   ingress:
     enabled: true
     ingressClassName: alb
