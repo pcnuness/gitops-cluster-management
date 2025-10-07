@@ -50,7 +50,13 @@ spec:
           targetRevision: 'main' # Ou a branch/tag que você utiliza
           # Caminho para o values.yaml customizado para o metrics-server
           path: addons/metrics-server
-          ref: custom-values # Nome de referência para esta fonte, usado em valueFiles
+          ref: custom-values
+          helm:
+            valueFiles:
+              # Segundo, aplica o values.yaml do repositório de customização (custom-values/values.yaml)
+              # Os valores deste arquivo sobrescreverão os do anterior em caso de conflito.
+              - $custom-values/values.yaml
+            ignoreMissingValueFiles: true  # Nome de referência para esta fonte, usado em valueFiles
       destination:
         namespace: kube-system # Namespace onde o metrics-server será instalado (pode ser parametrizado com {{values.addonChartNamespace}} se definido no generator)
         name: '{{name}}' # O cluster alvo é o nome do ClusterSecret
