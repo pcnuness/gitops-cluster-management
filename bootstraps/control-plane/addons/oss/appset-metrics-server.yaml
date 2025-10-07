@@ -41,9 +41,6 @@ spec:
             valueFiles:
               # Primeiro, aplica o values.yaml que está junto ao Chart base (base-chart/values.yaml)
               - values.yaml
-              # Segundo, aplica o values.yaml do repositório de customização (custom-values/values.yaml)
-              # Os valores deste arquivo sobrescreverão os do anterior em caso de conflito.
-              - $custom-values/values.yaml
             ignoreMissingValueFiles: true # Ignora se algum dos valueFiles não for encontrado, útil durante o desenvolvimento
         # --- Fonte 2: Os valores customizados do repositório 'gitops-cluster-management' ---
         - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git' # URL do seu repositório de gerenciamento (onde este AppSet reside)
