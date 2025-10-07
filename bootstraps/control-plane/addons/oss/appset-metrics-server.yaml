@@ -1,4 +1,3 @@
----
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
@@ -29,22 +28,23 @@ spec:
     spec:
       project: cluster-management # Projeto ArgoCD
       sources:
-        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
+        # Fonte 1: O Chart base do addon, com seus valores padrão para o ambiente 'develop'
+        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git' # URL do repositório central de Charts
           targetRevision: 'main'
-          ref: values
-        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
-          targetRevision: 'main'
+          # O caminho para o Chart específico do ambiente dentro do repositório central
           path: environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}
-          ref: base-chart
-        - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git'
+          ref: base-chart # Nome de referência para esta fonte
+        # Fonte 2: Os valores customizados para o addon que estão no próprio repositório 'gitops-cluster-management'
+        - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git' # URL do repositório onde este AppSet reside
           targetRevision: 'main'
+          # O caminho para os valores customizados do addon neste repositório
           path: addons/{{values.addonChart}}
-          ref: custom
+          ref: custom-values # Nome de referência para esta fonte
       helm:
+        # A ordem importa: os valores do 'custom-values' sobrescreverão os do 'base-chart'
         valueFiles:
-          - $base-chart/values.yaml
-          - $custom/values.yaml
-        ignoreMissingValueFiles: true
+          - $custom-values/values.yaml # Valores customizados do repositório gitops-cluster-management
+          #- $base-chart/values.yaml   # Valores padrão do Chart do ambiente (do platform-addons-charts)
       destination:
         namespace: '{{values.addonChartNamespace}}'
         name: '{{name}}' # 'name' é o nome do cluster retornado pelo gerador
