@@ -41,7 +41,6 @@ spec:
           ref: custom
       helm:
         valueFiles:
-          - $values/environments/default/addons/{{values.addonChart}}/values.yaml
           - $values/environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}/values.yaml
           - $custom/values.yaml
         ignoreMissingValueFiles: true
