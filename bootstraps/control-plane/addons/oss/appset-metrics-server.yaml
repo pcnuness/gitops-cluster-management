@@ -27,29 +27,37 @@ spec:
     metadata:
       name: addon-oss-{{values.addonChart}}-{{name}}
     spec:
-      project: cluster-management
+      project: cluster-management # Projeto ArgoCD
       sources:
-        # Ref for value files resolution
-        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
+        # Fonte 1: O Chart base do addon, com seus valores padrão para o ambiente 'develop'
+        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git' # URL do repositório central de Charts
           targetRevision: 'main'
-          ref: values
-        # Main chart path by environment
-        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
+          # O caminho para o Chart específico do ambiente dentro do repositório central
+          path: environments/{{labels.environment}}/addons/{{values.addonChart}}
+          ref: base-chart # Nome de referência para esta fonte
+        # Fonte 2: Os valores customizados para o addon que estão no próprio repositório 'gitops-cluster-management'
+        - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git' # URL do repositório onde este AppSet reside
           targetRevision: 'main'
-          path: environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}
-          helm:
-            valueFiles:
-              - values.yaml
-            ignoreMissingValueFiles: true
+          # O caminho para os valores customizados do addon neste repositório
+          path: addons/{{values.addonChart}}
+          ref: custom-values # Nome de referência para esta fonte
+      helm:
+        # A ordem importa: os valores do 'custom-values' sobrescreverão os do 'base-chart'
+        valueFiles:
+          - $base-chart/values.yaml   # Valores padrão do Chart do ambiente (do platform-addons-charts)
+          - $custom-values/values.yaml # Valores customizados do repositório gitops-cluster-management
+        ignoreMissingValueFiles: true # Útil se o arquivo de valores customizados não existir para um addon
       destination:
         namespace: '{{values.addonChartNamespace}}'
-        name: '{{name}}'
+        name: '{{name}}' # 'name' é o nome do cluster retornado pelo gerador
       syncPolicy:
-        automated: {}
+        automated:
+          prune: true
+          selfHeal: true
         syncOptions:
           - CreateNamespace=true
-          - ServerSideApply=true
-      ignoreDifferences:
+          - ServerSideApply=true # Conforme seu exemplo, para merges inteligentes
+      ignoreDifferences: # Exemplo de ignoreDifferences, ajuste conforme necessidade
         - kind: Deployment
           group: apps
           jqPathExpressions:
