@@ -33,7 +33,7 @@ spec:
         - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git' # URL do repositório central de Charts
           targetRevision: 'main'
           # O caminho para o Chart específico do ambiente dentro do repositório central
-          path: environments/{{labels.environment}}/addons/{{values.addonChart}}
+          path: environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}
           ref: base-chart # Nome de referência para esta fonte
         # Fonte 2: Os valores customizados para o addon que estão no próprio repositório 'gitops-cluster-management'
         - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git' # URL do repositório onde este AppSet reside
