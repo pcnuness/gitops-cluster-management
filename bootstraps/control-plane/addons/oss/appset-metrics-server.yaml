@@ -35,6 +35,7 @@ spec:
           helm:
             valueFiles:
               - $base-chart/values.yaml
+            ignoreMissingValueFiles: true
         - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git'
           targetRevision: 'main'
           path: addons/{{values.addonChart}}
