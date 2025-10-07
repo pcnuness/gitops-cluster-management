@@ -1,6 +1,7 @@
 ---
 # Metrics Server specific overrides for cluster management
 metrics-server:
+  fullnameOverride: metrics-server-custom-values
   # Additional metrics server configurations
   args:
     - --kubelet-insecure-tls
