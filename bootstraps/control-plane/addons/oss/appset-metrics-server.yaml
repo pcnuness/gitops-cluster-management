@@ -40,8 +40,7 @@ spec:
           helm:
             valueFiles:
               # Ordem de precedência: último sobrescreve os anteriores
-              - $values/environments/default/addons/{{values.addonChart}}/values.yaml
-              - $values/environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}/values.yaml
+              - $values/values.yaml
               - $values/addons/{{values.addonChart}}/values.yaml
             ignoreMissingValueFiles: true
       destination:
