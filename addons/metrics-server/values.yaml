@@ -20,8 +20,8 @@ metrics-server:
     - --kubelet-insecure-tls
   resources:
     limits:
-      cpu: 100m
+      cpu: 200m
       memory: 200Mi
     requests:
-      cpu: 50m
-      memory: 100Mi
+      cpu: 200m
+      memory: 200Mi
