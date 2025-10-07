@@ -1,3 +1,4 @@
+---
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
@@ -26,19 +27,26 @@ spec:
     metadata:
       name: addon-oss-{{values.addonChart}}-{{name}}
     spec:
-      project: cluster-management # Projeto ArgoCD
+      project: cluster-management
       sources:
+        # Source 1: Repositório de referência para valores (usado nos $refs)
+        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
+          targetRevision: 'main'
+          ref: values
+        # Source 2: Chart principal do addon
         - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
           targetRevision: 'main'
           path: environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}
-          ref: base-chart
           helm:
             valueFiles:
-              - $base-chart/values.yaml
+              # Ordem de precedência: último sobrescreve os anteriores
+              - $values/environments/default/addons/{{values.addonChart}}/values.yaml
+              - $values/environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}/values.yaml
+              - $values/addons/{{values.addonChart}}/values.yaml
             ignoreMissingValueFiles: true
       destination:
         namespace: '{{values.addonChartNamespace}}'
-        name: '{{name}}' # 'name' é o nome do cluster retornado pelo gerador
+        name: '{{name}}'
       syncPolicy:
         automated:
           prune: true
@@ -46,3 +54,9 @@ spec:
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
+      ignoreDifferences:
+        - kind: Deployment
+          group: apps
+          jqPathExpressions:
+            - .spec.template.spec.containers[].env[].valueFrom.resourceFieldRef.divisor
+            - .spec.template.spec.initContainers[].env[].valueFrom.resourceFieldRef.divisor
