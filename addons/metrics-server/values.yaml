@@ -1,8 +1,8 @@
 ---
 # Metrics Server specific overrides for cluster management
 metrics-server:
-  fullnameOverride: metrics-server-custom-develop
-  replicaCount: 2
+  fullnameOverride: metrics-server-custom-values-develop
+  replicas: 2
   resources:
     requests:
       cpu: 300m
