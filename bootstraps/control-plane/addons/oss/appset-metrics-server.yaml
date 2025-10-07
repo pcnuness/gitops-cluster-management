@@ -30,6 +30,11 @@ spec:
     spec:
       project: cluster-management
       sources:
+        - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git' # URL do seu repositório de gerenciamento (onde este AppSet reside)
+          targetRevision: 'main' # Ou a branch/tag que você utiliza
+          # Caminho para o values.yaml customizado para o metrics-server
+          path: addons/metrics-server
+          ref: custom-values # Nome de referência para esta fonte, usado em valueFiles
         # --- Fonte 1: O Chart base do repositório 'platform-addons-charts' ---
         - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git' # URL do seu repositório de Charts
           targetRevision: 'main' # Ou a branch/tag que você utiliza
@@ -41,19 +46,11 @@ spec:
             valueFiles:
               # Primeiro, aplica o values.yaml que está junto ao Chart base (base-chart/values.yaml)
               - values.yaml
-            ignoreMissingValueFiles: true # Ignora se algum dos valueFiles não for encontrado, útil durante o desenvolvimento
-        # --- Fonte 2: Os valores customizados do repositório 'gitops-cluster-management' ---
-        - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git' # URL do seu repositório de gerenciamento (onde este AppSet reside)
-          targetRevision: 'main' # Ou a branch/tag que você utiliza
-          # Caminho para o values.yaml customizado para o metrics-server
-          path: addons/metrics-server
-          ref: custom-values
-          helm:
-            valueFiles:
               # Segundo, aplica o values.yaml do repositório de customização (custom-values/values.yaml)
               # Os valores deste arquivo sobrescreverão os do anterior em caso de conflito.
               - $custom-values/values.yaml
-            ignoreMissingValueFiles: true  # Nome de referência para esta fonte, usado em valueFiles
+            ignoreMissingValueFiles: true # Ignora se algum dos valueFiles não for encontrado, útil durante o desenvolvimento
+        # --- Fonte 2: Os valores customizados do repositório 'gitops-cluster-management' ---
       destination:
         namespace: kube-system # Namespace onde o metrics-server será instalado (pode ser parametrizado com {{values.addonChartNamespace}} se definido no generator)
         name: '{{name}}' # O cluster alvo é o nome do ClusterSecret
