@@ -32,10 +32,10 @@ spec:
           targetRevision: 'main'
           path: environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}
           ref: base-chart
-      helm:
-        valueFiles:
-          - $base-chart/values.yaml
-        ignoreMissingValueFiles: true
+          helm:
+            valueFiles:
+              - $base-chart/values.yaml
+            ignoreMissingValueFiles: true
       destination:
         namespace: '{{values.addonChartNamespace}}'
         name: '{{name}}' # 'name' é o nome do cluster retornado pelo gerador
