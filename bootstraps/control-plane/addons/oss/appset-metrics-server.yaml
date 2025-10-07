@@ -34,8 +34,8 @@ spec:
         - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git' # URL do seu repositório de Charts
           targetRevision: 'main' # Ou a branch/tag que você utiliza
           # O caminho para o Chart específico do addon e ambiente.
-          # '{{labels.environment}}' pega o valor da label 'environment' do ClusterSecret.
-          path: environments/{{labels.environment}}/addons/metrics-server
+          # '{{metadata.labels.environment}}' pega o valor da label 'environment' do ClusterSecret.
+          path: environments/{{metadata.labels.environment}}/addons/metrics-server
           ref: base-chart # Nome de referência para esta fonte, usado em valueFiles
           helm:
             valueFiles:
