@@ -28,22 +28,19 @@ spec:
     spec:
       project: cluster-management # Projeto ArgoCD
       source:
-        repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
-        targetRevision: 'main'
-        path: environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}
-        ref: base-chart
-        helm:
-          valueFiles:
-            - $base-chart/values.yaml
-          ignoreMissingValueFiles: true
         repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git'
         targetRevision: 'main'
         path: addons/{{values.addonChart}}
         ref: custom
-        helm:
-          valueFiles:
-            - $custom/values.yaml
-          ignoreMissingValueFiles: true
+        repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
+        targetRevision: 'main'
+        path: environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}
+        ref: base-chart
+      helm:
+        valueFiles:
+          - $base-chart/values.yaml
+          - $custom/values.yaml
+        ignoreMissingValueFiles: true
       destination:
         namespace: '{{values.addonChartNamespace}}'
         name: '{{name}}' # 'name' é o nome do cluster retornado pelo gerador
