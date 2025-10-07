@@ -44,8 +44,8 @@ spec:
       helm:
         # A ordem importa: os valores do 'custom-values' sobrescreverão os do 'base-chart'
         valueFiles:
-          - $custom-values/values.yaml # Valores customizados do repositório gitops-cluster-management
           - $base-chart/values.yaml   # Valores padrão do Chart do ambiente (do platform-addons-charts)
+          - $custom-values/values.yaml # Valores customizados do repositório gitops-cluster-management
       destination:
         namespace: '{{values.addonChartNamespace}}'
         name: '{{name}}' # 'name' é o nome do cluster retornado pelo gerador
