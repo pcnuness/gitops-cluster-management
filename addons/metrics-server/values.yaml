@@ -2,7 +2,7 @@
 # Metrics Server specific overrides for cluster management
 metrics-server:
   fullnameOverride: metrics-server-custom-values
-  replicas: 3
+  replicas: 1
   priorityClassName: system-cluster-critical
   updateStrategy:
     type: RollingUpdate
