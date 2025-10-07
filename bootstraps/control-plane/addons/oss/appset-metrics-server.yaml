@@ -56,10 +56,4 @@ spec:
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
-          - ServerSideApply=true # Conforme seu exemplo, para merges inteligentes
-      ignoreDifferences: # Exemplo de ignoreDifferences, ajuste conforme necessidade
-        - kind: Deployment
-          group: apps
-          jqPathExpressions:
-            - .spec.template.spec.containers[].env[].valueFrom.resourceFieldRef.divisor
-            - .spec.template.spec.initContainers[].env[].valueFrom.resourceFieldRef.divisor
+          - ServerSideApply=true
