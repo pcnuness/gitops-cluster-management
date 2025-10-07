@@ -37,8 +37,8 @@ spec:
           helm:
             # A ordem importa: os valores do 'custom-values' sobrescreverão os do 'base-chart'
             valueFiles:
+              - $base-chart/values.yaml   # Valores padrão do Chart do ambiente (do platform-addons-charts)
               - $custom-values/values.yaml # Valores customizados do repositório gitops-cluster-management
-              #- $base-chart/values.yaml   # Valores padrão do Chart do ambiente (do platform-addons-charts)
         # Fonte 2: Os valores customizados para o addon que estão no próprio repositório 'gitops-cluster-management'
         - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git' # URL do repositório onde este AppSet reside
           targetRevision: 'main'
