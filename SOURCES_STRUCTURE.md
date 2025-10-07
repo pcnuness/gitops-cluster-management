@@ -2,7 +2,7 @@
 
 O documento explica a estrutura correta dos `sources` nos ApplicationSets para combinar valores de múltiplos repositórios.
 
-## 🔍 **Problema Comum**
+## **Problema Comum**
 
 O erro `"error reading helm chart from <path>/addons/grafana/Chart.yaml: no such file or directory"` ou valores não sendo mesclados ocorrem porque:
 
@@ -10,7 +10,7 @@ O erro `"error reading helm chart from <path>/addons/grafana/Chart.yaml: no such
 2. **Chart.yaml Ausente**: O diretório `addons/` contém apenas `values.yaml`, não charts completos
 3. **Falta de Refs Separados**: Para acessar arquivos de repositórios diferentes, são necessários múltiplos `ref`
 
-## ✅ **Solução Implementada - Multi-Repository Values**
+## **Solução Implementada - Multi-Repository Values**
 
 ### **Estrutura Correta dos Sources (3 Sources)**
 
@@ -33,7 +33,6 @@ sources:
     helm:
       valueFiles:
         # Ordem de precedência: último sobrescreve os anteriores
-        - $values-central/environments/default/addons/{{values.addonChart}}/values.yaml
         - $values-central/environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}/values.yaml
         - $values-cluster/addons/{{values.addonChart}}/values.yaml
       ignoreMissingValueFiles: true
@@ -66,7 +65,6 @@ sources:
   path: environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}
   helm:
     valueFiles:
-      - $values-central/environments/default/addons/{{values.addonChart}}/values.yaml
       - $values-central/environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}/values.yaml
       - $values-cluster/addons/{{values.addonChart}}/values.yaml
 ```
@@ -78,10 +76,10 @@ sources:
 ```
 platform-addons-charts/ (Repositório Central)
 └── environments/
-    ├── default/addons/metrics-server/
+    ├── develop/addons/metrics-server/
     │   ├── Chart.yaml           # ← Chart principal (obrigatório)
-    │   └── values.yaml          # ← Valores padrão (base)
-    └── develop/addons/metrics-server/
+    │   └── values.yaml          # ← Valores específicos do ambiente
+    └── production/addons/metrics-server/
         ├── Chart.yaml           # ← Chart principal (obrigatório)
         └── values.yaml          # ← Valores específicos do ambiente
 
