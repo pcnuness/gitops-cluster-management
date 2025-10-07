@@ -29,9 +29,14 @@ spec:
     spec:
       project: cluster-management
       sources:
+        # Ref for value files resolution
         - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
           targetRevision: 'main'
-          path: environments/develop/addons/{{values.addonChart}}
+          ref: values
+        # Main chart path by environment
+        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
+          targetRevision: 'main'
+          path: environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}
           helm:
             valueFiles:
               - values.yaml
