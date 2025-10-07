@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: addons-oss-metrics-server
-  namespace: argocd # O namespace onde o ArgoCD está instalado
+  namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "1"
     gitops.plataform/area: monitoring
@@ -13,49 +13,41 @@ spec:
   syncPolicy:
     preserveResourcesOnDeletion: true
   generators:
-    # Usaremos o generator 'clusters' para selecionar clusters baseados em labels.
-    # Assumimos que seus ClusterSecrets no ArgoCD têm uma label 'environment'.
     - clusters:
+        values:
+          addonChart: metrics-server
+          addonChartNamespace: kube-system
         selector:
-          matchLabels:
-            environment: develop # Exemplo: Este AppSet irá aplicar-se a clusters com a label 'environment: develop'
+          matchExpressions:
+            - key: environment
+              operator: In
+              values: ["develop"]
   template:
     metadata:
-      # '{{name}}' é o nome do ClusterSecret (nome do cluster no ArgoCD)
-      name: addon-oss-metrics-server-{{name}}
+      name: addon-oss-{{values.addonChart}}-{{name}}
     spec:
-      project: cluster-management
+      project: cluster-management # Projeto ArgoCD
       sources:
-        # Source 1: O Chart base do repositório 'platform-addons-charts'
-        # Esta fonte aponta para o diretório que contém o Chart.yaml (o Chart Helm em si)
         - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
           targetRevision: 'main'
-          # O caminho para o Chart específico do addon e ambiente.
-          # '{{labels.environment}}' pega o valor da label 'environment' do ClusterSecret.
-          path: environments/develop/addons/metrics-server
-          ref: base-chart # Nome de referência para esta fonte
-
-        # Source 2: Os valores customizados do repositório 'gitops-cluster-management'
-        # Esta fonte aponta para o diretório que contém o values.yaml de customização
+          ref: values
+        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
+          targetRevision: 'main'
+          path: environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}
+          ref: base
         - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git'
           targetRevision: 'main'
-          path: addons/metrics-server
-          ref: custom-values # Nome de referência para esta fonte
-
-      # O bloco 'helm' deve estar AQUI, no mesmo nível que 'sources'.
-      # Ele define como os 'valueFiles' das fontes serão combinados.
+          path: addons/{{values.addonChart}}
+          ref: custom
       helm:
         valueFiles:
-          # A ordem importa! O último arquivo na lista sobrepõe os valores dos anteriores.
-          # 1. Valores padrão do Chart base (do platform-addons-charts para o ambiente específico)
-          #- $base-chart/values.yaml
-          # 2. Valores customizados (do gitops-cluster-management) que sobrepõem os padrão
-          - $custom-values/values.yaml
-        ignoreMissingValueFiles: true # Útil para não falhar se um dos values.yaml não existir
-
+          - $values/environments/default/addons/{{values.addonChart}}/values.yaml
+          - $values/environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}/values.yaml
+          - $custom/values.yaml
+        ignoreMissingValueFiles: true
       destination:
-        namespace: kube-system # Namespace onde o metrics-server será instalado
-        name: '{{name}}' # O cluster alvo é o nome do ClusterSecret
+        namespace: '{{values.addonChartNamespace}}'
+        name: '{{name}}' # 'name' é o nome do cluster retornado pelo gerador
       syncPolicy:
         automated:
           prune: true
@@ -63,9 +55,3 @@ spec:
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
-      ignoreDifferences:
-        - kind: Deployment
-          group: apps
-          jqPathExpressions:
-            - .spec.template.spec.containers[].env[].valueFrom.resourceFieldRef.divisor
-            - .spec.template.spec.initContainers[].env[].valueFrom.resourceFieldRef.divisor
