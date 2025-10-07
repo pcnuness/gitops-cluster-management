@@ -2,7 +2,7 @@
 # Metrics Server specific overrides for cluster management
 metrics-server:
   fullnameOverride: metrics-server-custom-values-develop
-  replicas: 3
+  replicas: 4
   resources:
     requests:
       cpu: 300m
