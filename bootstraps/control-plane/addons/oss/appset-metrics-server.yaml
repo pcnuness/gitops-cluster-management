@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: addons-oss-metrics-server
-  namespace: argocd
+  namespace: argocd # O namespace onde o ArgoCD está instalado
   annotations:
     argocd.argoproj.io/sync-wave: "1"
     gitops.plataform/area: monitoring
@@ -13,41 +13,47 @@ spec:
   syncPolicy:
     preserveResourcesOnDeletion: true
   generators:
+    # Usaremos o generator 'clusters' para selecionar clusters baseados em labels.
+    # Assumimos que seus ClusterSecrets no ArgoCD têm uma label 'environment'.
     - clusters:
-        values:
-          addonChart: metrics-server
-          addonChartNamespace: kube-system
         selector:
-          matchExpressions:
-            - key: environment
-              operator: In
-              values: ["develop"]
+          matchLabels:
+            environment: develop # Exemplo: Este AppSet irá aplicar-se a clusters com a label 'environment: develop'
+        # Você pode adicionar valores padrão aqui se quiser que sejam acessíveis via {{values.<key>}}
+        # values:
+        #   addonChart: metrics-server
+        #   addonChartNamespace: kube-system
   template:
     metadata:
-      name: addon-oss-{{values.addonChart}}-{{name}}
+      # '{{name}}' é o nome do ClusterSecret (nome do cluster no ArgoCD)
+      name: addon-oss-metrics-server-{{name}}
     spec:
-      project: cluster-management # Projeto ArgoCD
+      project: cluster-management
       sources:
-        # Fonte 1: O Chart base do addon, com seus valores padrão para o ambiente 'develop'
-        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git' # URL do repositório central de Charts
-          targetRevision: 'main'
-          # O caminho para o Chart específico do ambiente dentro do repositório central
-          path: environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}
-          ref: base-chart # Nome de referência para esta fonte
+        # --- Fonte 1: O Chart base do repositório 'platform-addons-charts' ---
+        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git' # URL do seu repositório de Charts
+          targetRevision: 'main' # Ou a branch/tag que você utiliza
+          # O caminho para o Chart específico do addon e ambiente.
+          # '{{labels.environment}}' pega o valor da label 'environment' do ClusterSecret.
+          path: environments/{{labels.environment}}/addons/metrics-server
+          ref: base-chart # Nome de referência para esta fonte, usado em valueFiles
           helm:
-            # A ordem importa: os valores do 'custom-values' sobrescreverão os do 'base-chart'
             valueFiles:
-              - $base-chart/values.yaml   # Valores padrão do Chart do ambiente (do platform-addons-charts)
-              - $custom-values/values.yaml # Valores customizados do repositório gitops-cluster-management
-        # Fonte 2: Os valores customizados para o addon que estão no próprio repositório 'gitops-cluster-management'
-        - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git' # URL do repositório onde este AppSet reside
-          targetRevision: 'main'
-          # O caminho para os valores customizados do addon neste repositório
-          path: addons/{{values.addonChart}}
-          ref: custom-values # Nome de referência para esta fonte
+              # Primeiro, aplica o values.yaml que está junto ao Chart base (base-chart/values.yaml)
+              - values.yaml
+              # Segundo, aplica o values.yaml do repositório de customização (custom-values/values.yaml)
+              # Os valores deste arquivo sobrescreverão os do anterior em caso de conflito.
+              - $custom-values/values.yaml
+            ignoreMissingValueFiles: true # Ignora se algum dos valueFiles não for encontrado, útil durante o desenvolvimento
+        # --- Fonte 2: Os valores customizados do repositório 'gitops-cluster-management' ---
+        - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git' # URL do seu repositório de gerenciamento (onde este AppSet reside)
+          targetRevision: 'main' # Ou a branch/tag que você utiliza
+          # Caminho para o values.yaml customizado para o metrics-server
+          path: addons/metrics-server
+          ref: custom-values # Nome de referência para esta fonte, usado em valueFiles
       destination:
-        namespace: '{{values.addonChartNamespace}}'
-        name: '{{name}}' # 'name' é o nome do cluster retornado pelo gerador
+        namespace: kube-system # Namespace onde o metrics-server será instalado (pode ser parametrizado com {{values.addonChartNamespace}} se definido no generator)
+        name: '{{name}}' # O cluster alvo é o nome do ClusterSecret
       syncPolicy:
         automated:
           prune: true
