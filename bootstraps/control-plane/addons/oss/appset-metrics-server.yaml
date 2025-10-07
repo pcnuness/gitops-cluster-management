@@ -11,7 +11,7 @@ metadata:
     gitops.plataform/managed-by: foundations
 spec:
   syncPolicy:
-    preserveResourcesOnDeletion: true
+    preserveResourcesOnDeletion: false
   generators:
     - clusters:
         values:
