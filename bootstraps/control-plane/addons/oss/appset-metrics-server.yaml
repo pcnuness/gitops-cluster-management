@@ -19,10 +19,6 @@ spec:
         selector:
           matchLabels:
             environment: develop # Exemplo: Este AppSet irá aplicar-se a clusters com a label 'environment: develop'
-        # Você pode adicionar valores padrão aqui se quiser que sejam acessíveis via {{values.<key>}}
-        # values:
-        #   addonChart: metrics-server
-        #   addonChartNamespace: kube-system
   template:
     metadata:
       # '{{name}}' é o nome do ClusterSecret (nome do cluster no ArgoCD)
@@ -30,29 +26,35 @@ spec:
     spec:
       project: cluster-management
       sources:
-        - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git' # URL do seu repositório de gerenciamento (onde este AppSet reside)
-          targetRevision: 'main' # Ou a branch/tag que você utiliza
-          # Caminho para o values.yaml customizado para o metrics-server
-          path: addons/metrics-server
-          ref: custom-values # Nome de referência para esta fonte, usado em valueFiles
-        # --- Fonte 1: O Chart base do repositório 'platform-addons-charts' ---
-        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git' # URL do seu repositório de Charts
-          targetRevision: 'main' # Ou a branch/tag que você utiliza
+        # Source 1: O Chart base do repositório 'platform-addons-charts'
+        # Esta fonte aponta para o diretório que contém o Chart.yaml (o Chart Helm em si)
+        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
+          targetRevision: 'main'
           # O caminho para o Chart específico do addon e ambiente.
-          # '{{metadata.labels.environment}}' pega o valor da label 'environment' do ClusterSecret.
-          path: environments/{{metadata.labels.environment}}/addons/metrics-server
-          ref: base-chart # Nome de referência para esta fonte, usado em valueFiles
-          helm:
-            valueFiles:
-              # Primeiro, aplica o values.yaml que está junto ao Chart base (base-chart/values.yaml)
-              - values.yaml
-              # Segundo, aplica o values.yaml do repositório de customização (custom-values/values.yaml)
-              # Os valores deste arquivo sobrescreverão os do anterior em caso de conflito.
-              - $custom-values/values.yaml
-            ignoreMissingValueFiles: true # Ignora se algum dos valueFiles não for encontrado, útil durante o desenvolvimento
-        # --- Fonte 2: Os valores customizados do repositório 'gitops-cluster-management' ---
+          # '{{labels.environment}}' pega o valor da label 'environment' do ClusterSecret.
+          path: environments/develop/addons/metrics-server
+          ref: base-chart # Nome de referência para esta fonte
+
+        # Source 2: Os valores customizados do repositório 'gitops-cluster-management'
+        # Esta fonte aponta para o diretório que contém o values.yaml de customização
+        - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git'
+          targetRevision: 'main'
+          path: addons/metrics-server
+          ref: custom-values # Nome de referência para esta fonte
+
+      # O bloco 'helm' deve estar AQUI, no mesmo nível que 'sources'.
+      # Ele define como os 'valueFiles' das fontes serão combinados.
+      helm:
+        valueFiles:
+          # A ordem importa! O último arquivo na lista sobrepõe os valores dos anteriores.
+          # 1. Valores padrão do Chart base (do platform-addons-charts para o ambiente específico)
+          #- $base-chart/values.yaml
+          # 2. Valores customizados (do gitops-cluster-management) que sobrepõem os padrão
+          - $custom-values/values.yaml
+        ignoreMissingValueFiles: true # Útil para não falhar se um dos values.yaml não existir
+
       destination:
-        namespace: kube-system # Namespace onde o metrics-server será instalado (pode ser parametrizado com {{values.addonChartNamespace}} se definido no generator)
+        namespace: kube-system # Namespace onde o metrics-server será instalado
         name: '{{name}}' # O cluster alvo é o nome do ClusterSecret
       syncPolicy:
         automated:
@@ -61,3 +63,9 @@ spec:
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
+      ignoreDifferences:
+        - kind: Deployment
+          group: apps
+          jqPathExpressions:
+            - .spec.template.spec.containers[].env[].valueFrom.resourceFieldRef.divisor
+            - .spec.template.spec.initContainers[].env[].valueFrom.resourceFieldRef.divisor
