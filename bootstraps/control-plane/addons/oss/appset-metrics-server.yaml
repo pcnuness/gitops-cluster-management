@@ -46,7 +46,6 @@ spec:
         valueFiles:
           - $custom-values/values.yaml # Valores customizados do repositório gitops-cluster-management
           - $base-chart/values.yaml   # Valores padrão do Chart do ambiente (do platform-addons-charts)
-        ignoreMissingValueFiles: true # Útil se o arquivo de valores customizados não existir para um addon
       destination:
         namespace: '{{values.addonChartNamespace}}'
         name: '{{name}}' # 'name' é o nome do cluster retornado pelo gerador
