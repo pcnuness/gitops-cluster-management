@@ -1,32 +1,9 @@
 ---
 # Metrics Server specific overrides for cluster management
-metrics-server:
-  fullnameOverride: metrics-server-custom-values
-  replicas: 1
-  priorityClassName: system-cluster-critical
-  updateStrategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
-  metrics:
-    enabled: false
-  serviceMonitor:
-    enabled: false
-    interval: 5m
-    scrapeTimeout: 30s
-  tolerations:
-    - key: CriticalAddonsOnly
-      operator: Exists
-  args:
-    - --kubelet-insecure-tls
-    - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
-    - --cert-dir=/tmp
-    - --secure-port=10250
-    - --kubelet-certificate-authority=/var/lib/secrets/kubernetes.io/serviceaccount/ca.crt
-  resources:
-    requests:
-      cpu: 300m
-      memory: 300Mi
-    limits:
-      cpu: 600m
-      memory: 600Mi
+resources:
+  requests:
+    cpu: 300m
+    memory: 300Mi
+  limits:
+    cpu: 600m
+    memory: 600Mi
