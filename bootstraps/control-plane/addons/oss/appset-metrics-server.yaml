@@ -34,17 +34,17 @@ spec:
           # O caminho para o Chart específico do ambiente dentro do repositório central
           path: environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}
           ref: base-chart # Nome de referência para esta fonte
+          helm:
+            # A ordem importa: os valores do 'custom-values' sobrescreverão os do 'base-chart'
+            valueFiles:
+              - $custom-values/values.yaml # Valores customizados do repositório gitops-cluster-management
+              #- $base-chart/values.yaml   # Valores padrão do Chart do ambiente (do platform-addons-charts)
         # Fonte 2: Os valores customizados para o addon que estão no próprio repositório 'gitops-cluster-management'
         - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git' # URL do repositório onde este AppSet reside
           targetRevision: 'main'
           # O caminho para os valores customizados do addon neste repositório
           path: addons/{{values.addonChart}}
           ref: custom-values # Nome de referência para esta fonte
-          helm:
-            # A ordem importa: os valores do 'custom-values' sobrescreverão os do 'base-chart'
-            valueFiles:
-              - $custom-values/values.yaml # Valores customizados do repositório gitops-cluster-management
-              #- $base-chart/values.yaml   # Valores padrão do Chart do ambiente (do platform-addons-charts)
       destination:
         namespace: '{{values.addonChartNamespace}}'
         name: '{{name}}' # 'name' é o nome do cluster retornado pelo gerador
