@@ -1,0 +1,52 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: appset-applications
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    gitops.plataform/area: workload
+    gitops.plataform/service: applications
+    gitops.plataform/managed-by: platform
+spec:
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+  generators:
+    # Generator para descobrir aplicações baseado em diretórios
+    - git:
+        repoURL: https://github.com/pcnuness/gitops-cluster-management.git
+        revision: main
+        directories:
+          - path: applications/*
+  template:
+    metadata:
+      name: "app-{{path.basename}}"
+      labels:
+        app: "{{path.basename}}"
+        managed-by: argocd
+      annotations:
+        gitops.plataform/app-type: plain-manifest
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/pcnuness/gitops-cluster-management.git
+        targetRevision: main
+        path: "{{path}}"
+        # Sem helm, apenas aplicação direta de manifestos YAML
+      destination:
+        server: https://kubernetes.default.svc
+        # Namespace será definido nos próprios manifestos
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
