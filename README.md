@@ -13,8 +13,8 @@ Este repositório gerencia dois tipos de componentes:
 
 ```
 gitops-cluster-management/
-├── addons/                    # Valores customizados para Helm Charts
-├── applications/              # Aplicações com manifestos YAML puros
+├── addons/                   # Valores customizados para Helm Charts
+├── applications/             # Aplicações com manifestos YAML puros
 ├── bootstraps/               # ApplicationSets do ArgoCD
 ├── iac/                      # Infrastructure as Code (Terraform, etc)
 └── .docs/                    # 📚 Documentação completa
