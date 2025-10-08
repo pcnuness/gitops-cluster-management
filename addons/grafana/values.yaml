@@ -4,7 +4,7 @@ grafana:
   # Additional Grafana configurations
   ingress:
     enabled: true
-    ingressClassName: alb
+    ingressClassName: nginx
     annotations:
       alb.ingress.kubernetes.io/scheme: internet-facing
       alb.ingress.kubernetes.io/target-type: ip
