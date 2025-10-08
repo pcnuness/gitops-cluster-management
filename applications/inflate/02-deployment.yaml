@@ -4,7 +4,7 @@ metadata:
   name: inflate
   namespace: workshop
 spec:
-  replicas: 8
+  replicas: 1
   selector:
     matchLabels:
       app: inflate
