@@ -2,38 +2,71 @@
 
 O documento explica a estrutura correta dos `sources` nos ApplicationSets para combinar valores de múltiplos repositórios.
 
-## **Problema Comum**
+## 📋 Índice
 
-O erro `"error reading helm chart from <path>/addons/grafana/Chart.yaml: no such file or directory"` ou valores não sendo mesclados ocorrem porque:
+1. [Arquitetura Atual](#arquitetura-atual)
+2. [Estrutura de Sources](#estrutura-de-sources)
+3. [Como Funciona](#como-funciona)
+4. [Precedência de Valores](#precedência-de-valores)
+5. [Troubleshooting](#troubleshooting)
 
-1. **Múltiplos Sources Incorretos**: Cada source precisa de um `ref` único para ser referenciado nos valueFiles
-2. **Chart.yaml Ausente**: O diretório `addons/` contém apenas `values.yaml`, não charts completos
-3. **Falta de Refs Separados**: Para acessar arquivos de repositórios diferentes, são necessários múltiplos `ref`
+---
 
-## **Solução Implementada - Multi-Repository Values**
+## 🏗️ Arquitetura Atual
 
-### **Estrutura Correta dos Sources (3 Sources)**
+### Repositórios
+
+#### `platform-addons-charts` (Central)
+```
+platform-addons-charts/
+└── addons/
+    ├── metrics-server/
+    │   ├── Chart.yaml          # Chart wrapper com dependencies
+    │   └── values.yaml         # Valores padrão base
+    ├── grafana/
+    │   ├── Chart.yaml
+    │   └── values.yaml
+    └── crossplane/
+        ├── Chart.yaml
+        └── values.yaml
+```
+
+#### `gitops-cluster-management` (Por Cluster)
+```
+gitops-cluster-management/
+└── addons/
+    ├── metrics-server/
+    │   └── values.yaml         # Customizações específicas do cluster
+    ├── grafana/
+    │   └── values.yaml
+    └── crossplane/
+        └── values.yaml
+```
+
+---
+
+## **Estrutura Correta dos Sources (3 Sources)**
 
 ```yaml
 sources:
-  # Source 1: Repositório central - para valores default e do ambiente
+  # Source 1: Repositório central - valores base
   - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
-    targetRevision: 'main'
+    targetRevision: 'main'  # ou 'v0.x.x' para prod
     ref: values-central  # ← Permite usar $values-central/...
   
-  # Source 2: Repositório do cluster - para valores customizados
+  # Source 2: Repositório do cluster - customizações
   - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git'
     targetRevision: 'main'
     ref: values-cluster  # ← Permite usar $values-cluster/...
   
-  # Source 3: Chart principal com valueFiles
+  # Source 3: Chart principal (centralizado)
   - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
-    targetRevision: 'main'
-    path: environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}
+    targetRevision: 'main'  # Controle de versão aqui
+    path: addons/{{values.addonChart}}
     helm:
       valueFiles:
         # Ordem de precedência: último sobrescreve os anteriores
-        - $values-central/environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}/values.yaml
+        - $values-central/addons/{{values.addonChart}}/values.yaml
         - $values-cluster/addons/{{values.addonChart}}/values.yaml
       ignoreMissingValueFiles: true
 ```

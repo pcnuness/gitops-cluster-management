@@ -18,33 +18,28 @@ spec:
           addonChart: grafana
           addonChartReleaseName: grafana
           addonChartNamespace: observability
-        selector:
-          matchExpressions:
-            - key: environment
-              operator: In
-              values: ["{{values.environment}}"]
   template:
     metadata:
       name: addon-oss-{{values.addonChart}}-{{name}}
     spec:
       project: cluster-management
       sources:
-        # Source 1: Repositório central (platform-addons-charts) para valores default e do ambiente
+        # Source 1: Repositório central (platform-addons-charts) - valores base
         - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
-          targetRevision: 'main'
+          targetRevision: 'main'  # Use 'main' para develop, tags (v0.x.x) para prod
           ref: values-central
-        # Source 2: Repositório do cluster (gitops-cluster-management) para valores customizados
+        # Source 2: Repositório do cluster (gitops-cluster-management) - customizações
         - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git'
           targetRevision: 'main'
           ref: values-cluster
-        # Source 3: Chart principal do addon
+        # Source 3: Chart principal do addon (centralizado)
         - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
-          targetRevision: 'main'
-          path: environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}
+          targetRevision: 'main'  # Controle de versão: 'main' ou 'v0.x.x'
+          path: addons/{{values.addonChart}}
           helm:
             valueFiles:
               # Ordem de precedência: último sobrescreve os anteriores
-              - $values-central/environments/{{metadata.labels.environment}}/addons/{{values.addonChart}}/values.yaml
+              - $values-central/addons/{{values.addonChart}}/values.yaml
               - $values-cluster/addons/{{values.addonChart}}/values.yaml
             ignoreMissingValueFiles: true
       destination:
