@@ -7,7 +7,7 @@ Este documento explica como usar a estrutura GitOps para gerenciar addons em clu
 ### Repositórios
 
 1. **gitops-cluster-management**: Contém AppSets e valores personalizados específicos do cluster
-2. **platform-addons-charts**: Contém Charts Helm centralizados com valores padrão por ambiente
+2. **platform-addons-charts**: Contém Charts Helm centralizados (estrutura simplificada)
 
 ### Estrutura de Diretórios
 
@@ -16,38 +16,24 @@ gitops-cluster-management/
 ├── addons/                          # Valores personalizados por cluster
 │   ├── crossplane/values.yaml
 │   ├── grafana/values.yaml
-│   ├── metrics-server/values.yaml
-│   └── eks-addons/values.yaml
+│   └── metrics-server/values.yaml
 └── bootstraps/control-plane/addons/
-    ├── oss/                         # Addons Open Source
-    │   ├── appset-crossplane.yaml
-    │   ├── appset-grafana.yaml
-    │   ├── appset-metrics-server.yaml
-    │   └── appset-all-oss-addons.yaml
-    └── aws/                         # Addons AWS
-        ├── appset-eks-addons.yaml
-        ├── appset-ebs-csi-resources.yaml
-        └── appset-all-aws-addons.yaml
+    └── oss/                         # Addons Open Source
+        ├── appset-crossplane.yaml
+        ├── appset-grafana.yaml
+        └── appset-metrics-server.yaml
 
 platform-addons-charts/
-└── environments/
-    ├── default/                     # Valores padrão
-    ├── develop/                     # Ambiente de desenvolvimento
-    ├── uat/                         # Ambiente de teste
-    └── prod/                        # Ambiente de produção
-    └── {environment}/addons/
-        ├── crossplane/
-        │   ├── Charts.yaml
-        │   └── values.yaml
-        ├── grafana/
-        │   ├── Charts.yaml
-        │   └── values.yaml
-        ├── metrics-server/
-        │   ├── Charts.yaml
-        │   └── values.yaml
-        └── eks-addons/
-            ├── Charts.yaml
-            └── values.yaml
+└── addons/                          # Charts centralizados (sem separação por ambiente)
+    ├── crossplane/
+    │   ├── Chart.yaml              # Não mais Charts.yaml
+    │   └── values.yaml             # Valores padrão base
+    ├── grafana/
+    │   ├── Chart.yaml
+    │   └── values.yaml
+    └── metrics-server/
+        ├── Chart.yaml
+        └── values.yaml
 ```
 
 ## Addons Disponíveis
@@ -84,15 +70,29 @@ platform-addons-charts/
 
 ### 1. Criar Chart no platform-addons-charts
 
-Para cada ambiente, crie a estrutura:
+Crie a estrutura centralizada:
 
 ```bash
-mkdir -p platform-addons-charts/environments/{environment}/addons/{addon-name}
+mkdir -p platform-addons-charts/addons/{addon-name}
 ```
 
 Crie os arquivos:
-- `Charts.yaml`: Dependências do Helm
-- `values.yaml`: Valores padrão para o ambiente
+- `Chart.yaml`: Metadados do chart e dependências upstream
+- `values.yaml`: Valores padrão base aplicáveis a todos os clusters
+
+Exemplo de `Chart.yaml`:
+```yaml
+apiVersion: v2
+name: {addon-name}
+description: A helm chart for {addon-name}
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+dependencies:
+  - name: {addon-name}
+    version: 1.0.0
+    repository: https://charts.example.com/
+```
 
 ### 2. Criar Valores Personalizados no gitops-cluster-management
 
@@ -105,16 +105,59 @@ Crie `values.yaml` com configurações específicas do cluster.
 ### 3. Criar ApplicationSet
 
 Crie um novo AppSet em:
-- `gitops-cluster-management/bootstraps/control-plane/addons/{categoria}/appset-{addon-name}.yaml`
+- `gitops-cluster-management/bootstraps/control-plane/addons/oss/appset-{addon-name}.yaml`
 
-Use a estrutura base dos AppSets existentes, ajustando:
+Estrutura recomendada com multi-source:
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: addons-oss-{addon-name}
+  namespace: argocd
+spec:
+  generators:
+    - clusters:
+        values:
+          addonChart: {addon-name}
+          addonChartNamespace: {namespace}
+  template:
+    metadata:
+      name: addon-oss-{{values.addonChart}}-{{name}}
+    spec:
+      project: cluster-management
+      sources:
+        # Source 1: Valores base centralizados
+        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
+          targetRevision: 'main'  # ou 'v0.x.x' para prod
+          ref: values-central
+        # Source 2: Valores customizados do cluster
+        - repoURL: 'https://github.com/pcnuness/gitops-cluster-management.git'
+          targetRevision: 'main'
+          ref: values-cluster
+        # Source 3: Chart principal
+        - repoURL: 'https://github.com/pcnuness/platform-addons-charts.git'
+          targetRevision: 'main'
+          path: addons/{{values.addonChart}}
+          helm:
+            valueFiles:
+              - $values-central/addons/{{values.addonChart}}/values.yaml
+              - $values-cluster/addons/{{values.addonChart}}/values.yaml
+            ignoreMissingValueFiles: true
+      destination:
+        namespace: '{{values.addonChartNamespace}}'
+        name: '{{name}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+```
+
+Ajuste:
 - `addonChart`: Nome do addon
 - `addonChartNamespace`: Namespace de destino
-- `sync-wave`: Ordem de sincronização
-
-### 4. Atualizar AppSet Agregador (Opcional)
-
-Se usar AppSets agregadores (`appset-all-*`), adicione o novo addon à lista de `addonCharts`.
+- `sync-wave` (annotation): Ordem de sincronização
 
 ## Configuração por Ambiente
 

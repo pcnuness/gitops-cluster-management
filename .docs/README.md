@@ -17,26 +17,39 @@ Este repositório gerencia os addons essenciais para clusters Kubernetes usando 
 
 ```
 gitops-cluster-management/
-├── addons/                       # Valores customizados por cluster
+├── addons/                       # Valores customizados por cluster (Helm)
 │   ├── metrics-server/
 │   │   └── values.yaml          # Overrides específicos do cluster
 │   ├── grafana/
 │   │   └── values.yaml
 │   └── crossplane/
 │       └── values.yaml
+├── applications/                 # Aplicações (Plain YAML)
+│   ├── game-2048/               # Aplicação exemplo
+│   │   ├── 01-namespace.yaml
+│   │   ├── 02-deployment.yaml
+│   │   ├── 03-service.yaml
+│   │   └── 04-ingress.yaml
+│   └── inflate/                 # Worker exemplo
+│       ├── 01-namespace.yaml
+│       └── 02-deployment.yaml
 ├── bootstraps/                   # ApplicationSets e configurações do ArgoCD
 │   ├── cluster-init/             # Bootstrap inicial do cluster
 │   │   ├── app-argocd-projects.yaml
 │   │   └── app-controle-plane-addons.yaml
-│   └── control-plane/            # Gerenciamento dos addons
-│       └── addons/
-│           └── oss/              # ApplicationSets para addons OSS
-│               ├── appset-metrics-server.yaml
-│               ├── appset-grafana.yaml
-│               └── appset-crossplane.yaml
-├── docs/                         # Documentação
+│   └── control-plane/
+│       ├── addons/
+│       │   └── oss/              # ApplicationSets para addons OSS (Helm)
+│       │       ├── appset-metrics-server.yaml
+│       │       ├── appset-grafana.yaml
+│       │       └── appset-crossplane.yaml
+│       └── workload/
+│           └── appset-applications.yaml  # ApplicationSet para apps (YAML)
+├── .docs/                        # Documentação
 │   ├── SOURCES_STRUCTURE.md     # Estrutura de sources multi-repo
 │   ├── ROLLOUT_STRATEGIES.md    # Estratégias de rollout e versionamento
+│   ├── APPLICATIONS_GUIDE.md    # Guia de aplicações plain YAML
+│   ├── ADDONS_GUIDE.md          # Guia de addons Helm
 │   └── ARCHITECTURE.md           # Diagrama de arquitetura
 └── README.md                     # Esta documentação
 ```
@@ -82,18 +95,24 @@ sources:
 
 ---
 
-## 📦 Addons Suportados
+## 📦 Componentes Gerenciados
 
-### Metrics & Monitoring
+### Addons (Helm Charts)
 | Addon | Versão | Descrição | Namespace |
 |-------|--------|-----------|-----------|
 | **metrics-server** | 3.12.2 | Coleta métricas de recursos do cluster | `kube-system` |
 | **grafana** | 10.0.0 | Plataforma de observabilidade e dashboards | `observability` |
-
-### Infrastructure as Code
-| Addon | Versão | Descrição | Namespace |
-|-------|--------|-----------|-----------|
 | **crossplane** | 1.15.3 | Provisionamento de recursos AWS | `crossplane-system` |
+
+**Gerenciamento**: Helm Charts com valores centralizados + overrides por cluster
+
+### Applications (Plain YAML)
+| Application | Tipo | Descrição | Namespace |
+|-------------|------|-----------|-----------|
+| **game-2048** | Web App | Aplicação web de exemplo | `game-2048` |
+| **inflate** | Worker | Pod para testes de carga | `workshop` |
+
+**Gerenciamento**: Manifestos Kubernetes YAML puros (sem Helm)
 
 ---
 
@@ -214,7 +233,7 @@ git push
 
 ### 2. Atualizar Versão de um Addon
 
-Ver documentação completa em [ROLLOUT_STRATEGIES.md](./ROLLOUT_STRATEGIES.md)
+Ver documentação completa em [ROLLOUT_STRATEGIES.md](./.docs/ROLLOUT_STRATEGIES.md)
 
 **Resumo**:
 ```bash
@@ -227,6 +246,42 @@ git push --tags
 
 # 2. Deploy automático em develop (usa 'main')
 # 3. Promover para UAT/Prod (atualizar targetRevision para 'v0.2.0')
+```
+
+### 3. Adicionar Nova Aplicação (Plain YAML)
+
+Ver guia completo em [APPLICATIONS_GUIDE.md](./.docs/APPLICATIONS_GUIDE.md)
+
+**Resumo**:
+```bash
+# 1. Criar diretório
+mkdir -p applications/my-app
+
+# 2. Adicionar manifestos YAML
+cat > applications/my-app/01-namespace.yaml <<EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: my-app
+EOF
+
+cat > applications/my-app/02-deployment.yaml <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+  namespace: my-app
+spec:
+  replicas: 2
+  # ... resto do spec
+EOF
+
+# 3. Commit e push
+git add applications/my-app/
+git commit -m "feat(app): add my-app"
+git push
+
+# 4. ArgoCD cria Application automaticamente!
 ```
 
 ---
@@ -271,10 +326,12 @@ targetRevision: 'v0.1.0'
 
 | Documento | Descrição |
 |-----------|-----------|
-| [SOURCES_STRUCTURE.md](./SOURCES_STRUCTURE.md) | Estrutura detalhada de sources multi-repositório |
-| [ROLLOUT_STRATEGIES.md](./ROLLOUT_STRATEGIES.md) | Estratégias completas de rollout e versionamento |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Diagrama de arquitetura Mermaid |
-| [CLUSTER_CONFIGURATION.md](./CLUSTER_CONFIGURATION.md) | Como configurar clusters com labels |
+| [ADDONS_GUIDE.md](./.docs/ADDONS_GUIDE.md) | Guia completo de gerenciamento de addons (Helm) |
+| [APPLICATIONS_GUIDE.md](./.docs/APPLICATIONS_GUIDE.md) | Guia de aplicações com plain YAML manifests |
+| [SOURCES_STRUCTURE.md](./.docs/SOURCES_STRUCTURE.md) | Estrutura detalhada de sources multi-repositório |
+| [ROLLOUT_STRATEGIES.md](./.docs/ROLLOUT_STRATEGIES.md) | Estratégias completas de rollout e versionamento |
+| [ARCHITECTURE.md](./.docs/ARCHITECTURE.md) | Diagrama de arquitetura Mermaid |
+| [CLUSTER_CONFIGURATION.md](./.docs/CLUSTER_CONFIGURATION.md) | Como configurar clusters com labels |
 
 ---
 
