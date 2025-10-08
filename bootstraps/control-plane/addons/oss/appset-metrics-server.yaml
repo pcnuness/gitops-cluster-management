@@ -44,7 +44,7 @@ spec:
             ignoreMissingValueFiles: true
       destination:
         namespace: '{{values.addonChartNamespace}}'
-        name: https://kubernetes.default.svc
+        name: '{{name}}'
       syncPolicy:
         automated:
           prune: true
