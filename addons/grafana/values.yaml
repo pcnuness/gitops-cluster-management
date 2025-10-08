@@ -10,7 +10,7 @@ grafana:
       alb.ingress.kubernetes.io/target-type: ip
       alb.ingress.kubernetes.io/load-balancer-name: grafana-alb
     hosts:
-      - grafana.{{ .Values.global.domain | default "example.com" }}
+      - grafana.project.{{ .Values.global.domain | default "example.com" }}
   # Additional plugins
   plugins:
     - grafana-piechart-panel
