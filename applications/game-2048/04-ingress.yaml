@@ -9,13 +9,5 @@ metadata:
     alb.ingress.kubernetes.io/load-balancer-name: game-2048-alb
 spec:
   ingressClassName: nginx
-  rules:
-    - http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: game-2048
-                port:
-                  number: 80
+  hosts:
+    - game-2048.{{ .Values.global.domain | default "local" }}
