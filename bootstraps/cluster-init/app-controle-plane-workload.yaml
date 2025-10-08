@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: bootstrap-app-controle-plane-addons
+  name: bootstrap-app-controle-plane-workload
   namespace: argocd
   annotations:
     gitops.plataform/area: devops
